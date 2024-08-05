@@ -33,7 +33,7 @@ angle_list = []
 for angle in pol_list:
     for entry in Rquantdict[angle]:
         I_list.append(float(entry["Irel (mA)"]))
-        angle_list.append(float(entry["Angle (˚)"]))
+        angle_list.append(float(entry["Angle (Ëš)"]))
     quant_dict[angle]["I"] = I_list
     quant_dict[angle]["Angle"] = angle_list
     I_list = []
@@ -71,14 +71,47 @@ for angle in pol_list:
     qual_dict[angle]["Time"] = time_list
     I_list = []
     time_list = []
-    
+
+RqualBlocked = csv.DictReader(open('dspe/physdata/qualitative-blocked-slit.csv', 'r')),
+qual_blocked = {"I":[], "Time":[]}
+for entry in RqualBlocked[0]:
+    I_list.append(float(entry['Current']))
+    time_list.append(float(entry['Time']))
+qual_blocked["I"] = I_list
+qual_blocked["Time"] = time_list
+
 plt.figure(1)
 plt.plot(
-    quant_dict[0]["Angle"], quant_dict[0]["I"], 'r-',
-    quant_dict[30]["Angle"], quant_dict[30]["I"], 'g-',
-    quant_dict[60]["Angle"], quant_dict[60]["I"], 'b-',
-    quant_dict[70]["Angle"], quant_dict[70]["I"], 'c-',
+    quant_dict[0]["Angle"], quant_dict[0]["I"], 'ro',
+    quant_dict[30]["Angle"], quant_dict[30]["I"], 'go',
+    quant_dict[60]["Angle"], quant_dict[60]["I"], 'bo',
+    quant_dict[70]["Angle"], quant_dict[70]["I"], 'co',
 )
+
+plt.figure(2)
+plt.plot(
+    qual_blocked["Time"], qual_blocked["I"], 'r-'
+)
+
+dlratio = 198/28.5
+
+def beta(theta):
+    return 2*math.pi*dlratio*math.sin(theta)
+
+alratio = 40/28.5
+
+def alpha(theta):
+    return math.pi*alratio*math.sin(theta)
+
+def PolarisedInt(theta, p):
+    return (math.sin(alpha(theta))/alpha(theta))**2*(1+math.cos(p)**4+2*math.cos(p)**2*math.cos(beta(theta)))
+vectPolInt = np.vectorize(PolarisedInt)
+
+X, Y = np.meshgrid(np.linspace(-math.pi/2, math.pi/2, 2280), np.linspace(0, math.pi/2, 2280))
+Z = vectPolInt(X, Y)
+
+plt.figure(3)
+plt.pcolormesh(X, Y, Z, vmax=1.2, cmap='plasma')
 
 plt.show()
 
