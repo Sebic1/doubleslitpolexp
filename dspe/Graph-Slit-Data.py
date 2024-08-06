@@ -77,7 +77,7 @@ for angle in pol_list:
 RqualBlocked = csv.DictReader(open('dspe/physdata/qualitative-blocked-slit.csv', 'r')),
 qual_blocked = {"I":[], "Time":[]}
 for entry in RqualBlocked[0]:
-    I_list.append(float(entry['Current']))
+    I_list.append(float(entry['Current'])*1000)
     time_list.append(float(entry['Time']))
 qual_blocked["I"] = I_list
 qual_blocked["Time"] = time_list
@@ -126,21 +126,25 @@ vectPolInt = np.vectorize(PolarisedInt)
 X, Y = np.meshgrid(np.linspace(-90, 90, 2280), np.linspace(0, 90, 2280))
 Z = vectPolInt(X*math.pi/180, Y*math.pi/180)
 
+big = 16
+mid = 15
+small = 14
+
 plt.figure(3)
-plt.suptitle('Polarised Slit, Double Slit Light Relative Intensity Theoretical')
+plt.suptitle('Polarised Slit, Double Slit Light Relative Intensity Theoretical', fontsize = big)
 plt.subplot(1, 2, 1)
 plt.pcolormesh(X, Y, Z, cmap='GnBu_r', norm=mpl.colors.LogNorm(vmin=Z.min(), vmax=Z.max()))
 plt.colorbar()
-plt.title('Logarithmic')
-plt.xlabel('Angle From Center (˚)')
-plt.ylabel('Angle of Polariser from Normal (˚)')
+plt.title('Logarithmic', fontsize = mid)
+plt.xlabel('Angle From Center (˚)', fontsize = small)
+plt.ylabel('Angle of Polariser from Normal (˚)', fontsize = small)
 
 plt.subplot(1, 2, 2)
 plt.pcolormesh(X, Y, Z, cmap='plasma')
 plt.colorbar()
-plt.title('Normal')
-plt.xlabel('Angle From Center (˚)')
-plt.ylabel('Angle of Polariser from Normal (˚)')
+plt.title('Normal', fontsize = mid)
+plt.xlabel('Angle From Center (˚)', fontsize = small)
+plt.ylabel('Angle of Polariser from Normal (˚)', fontsize = small)
 
 X = np.linspace(0,90,1000)
 pol_angle = 90
@@ -176,7 +180,7 @@ for angle in select_pol_list:
     newY = []
     index = 0
     for n in np.nditer(X):
-        newY.append(qual_dict[angle]["I"][math.floor(index)])
+        newY.append(qual_dict[angle]["I"][math.floor(index)]*1000)
         index += frac
     Y[angle] = newY
     
