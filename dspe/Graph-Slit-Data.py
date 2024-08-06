@@ -90,10 +90,13 @@ qual_blocked["Time"] = time_list
 #    quant_dict[70]["Angle"], quant_dict[70]["I"], 'co',
 #)
 #
-#plt.figure(2)
-#plt.plot(
-#    qual_blocked["Time"], qual_blocked["I"], 'r-',
-#)
+plt.figure(2)
+plt.plot(
+    qual_blocked["Time"], qual_blocked["I"], 'r-',
+)
+plt.xlabel('Time (s)')
+plt.ylabel('Relative Intensity (mA)')
+plt.title('Qualitative Data for Blocked Slit, Double Slit Light Intensity')
 
 plt.figure(1)
 plt.plot(
