@@ -1,8 +1,10 @@
 import numpy as np
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 import math
 import pandas as pd
 import csv
+from cycler import cycler
 
 pol_list = [0,30,60,70,75,80,85,90]
 
@@ -80,17 +82,22 @@ for entry in RqualBlocked[0]:
 qual_blocked["I"] = I_list
 qual_blocked["Time"] = time_list
 
+#plt.figure(1)
+#plt.plot(
+#    quant_dict[0]["Angle"], quant_dict[0]["I"], 'ro',
+#    quant_dict[30]["Angle"], quant_dict[30]["I"], 'go',
+#    quant_dict[60]["Angle"], quant_dict[60]["I"], 'bo',
+#    quant_dict[70]["Angle"], quant_dict[70]["I"], 'co',
+#)
+#
+#plt.figure(2)
+#plt.plot(
+#    qual_blocked["Time"], qual_blocked["I"], 'r-',
+#)
+
 plt.figure(1)
 plt.plot(
-    quant_dict[0]["Angle"], quant_dict[0]["I"], 'ro',
-    quant_dict[30]["Angle"], quant_dict[30]["I"], 'go',
-    quant_dict[60]["Angle"], quant_dict[60]["I"], 'bo',
-    quant_dict[70]["Angle"], quant_dict[70]["I"], 'co',
-)
-
-plt.figure(2)
-plt.plot(
-    qual_blocked["Time"], qual_blocked["I"], 'r-'
+    qual_dict[90]["Time"], qual_dict[90]["I"], 'r-'
 )
 
 dlratio = 198/28.5
@@ -113,19 +120,32 @@ def PolarisedInt(theta, p):
     return (sinc(alpha(theta)))**2*(1+math.cos(p)**4+2*math.cos(p)**2*math.cos(beta(theta)))
 vectPolInt = np.vectorize(PolarisedInt)
 
-X, Y = np.meshgrid(np.linspace(-math.pi/2, math.pi/2, 2280), np.linspace(0, math.pi/2, 2280))
-Z = vectPolInt(X, Y)
+X, Y = np.meshgrid(np.linspace(-90, 90, 2280), np.linspace(0, 90, 2280))
+Z = vectPolInt(X*math.pi/180, Y*math.pi/180)
 
 plt.figure(3)
-plt.pcolormesh(X, Y, Z, vmax=1.2, cmap='plasma')
+plt.suptitle('Polarised Slit, Double Slit Light Relative Intensity Theoretical')
+plt.subplot(1, 2, 1)
+plt.pcolormesh(X, Y, Z, cmap='GnBu_r', norm=mpl.colors.LogNorm(vmin=Z.min(), vmax=Z.max()))
+plt.colorbar()
+plt.title('Logarithmic')
+plt.xlabel('Angle From Center (˚)')
+plt.ylabel('Angle of Polariser from Normal (˚)')
 
-X = np.linspace(0,math.pi/2,1000)
-pol_angle = 0
-Y = vectPolInt(X, pol_angle*math.pi/180)*quant_dict[pol_angle]["I"][0]*0.25
+plt.subplot(1, 2, 2)
+plt.pcolormesh(X, Y, Z, cmap='plasma')
+plt.colorbar()
+plt.title('Normal')
+plt.xlabel('Angle From Center (˚)')
+plt.ylabel('Angle of Polariser from Normal (˚)')
+
+X = np.linspace(0,90,1000)
+pol_angle = 90
+Y = vectPolInt(X*math.pi/180, pol_angle*math.pi/180)*quant_dict[pol_angle]["I"][0]*1
 
 rad_list = []
 for angle in quant_dict[pol_angle]["Angle"]:
-    rad_list.append((180 - angle)*math.pi/180)
+    rad_list.append((180 - angle))
 
 plt.figure(4)
 plt.plot(
@@ -137,9 +157,41 @@ plt.plot(
     label = "Theoretical Data"
 )
 
-plt.xlabel('Measurement Angle from Center (rad)')
+plt.xlabel('Measurement Angle from Center (˚)')
 plt.ylabel('Relative Intensity (mA)')
 plt.title(f'{pol_angle}˚ Polarised Slit, Double Slit Light Intensity')
+plt.legend()
+
+plt.figure(5)
+
+X = np.linspace(0,1,15000)
+
+Y = {}
+select_pol_list = [30,70,80,85,90]
+for angle in select_pol_list:
+    frac = len(qual_dict[angle]["I"])/X.size
+    newY = []
+    index = 0
+    for n in np.nditer(X):
+        newY.append(qual_dict[angle]["I"][math.floor(index)])
+        index += frac
+    Y[angle] = newY
+    
+cmap = mpl.colormaps['plasma']
+colours = cmap(np.linspace(0,1,len(select_pol_list)))
+    
+i = 0
+for angle, plot in Y.items():
+    plt.plot(
+        X, plot,
+        label = f'{angle}˚',
+        color = colours[i]
+    )
+    i += 1
+    
+plt.xlabel('Scaled Time Measurement')
+plt.ylabel('Relative Intensity (mA)')
+plt.title('Qualitative Data for Polarised Slit, Double Slit Light Intensity')
 plt.legend()
 
 plt.show()
