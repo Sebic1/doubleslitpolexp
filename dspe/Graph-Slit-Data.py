@@ -33,7 +33,7 @@ angle_list = []
 for angle in pol_list:
     for entry in Rquantdict[angle]:
         I_list.append(float(entry["Irel (mA)"]))
-        angle_list.append(float(entry["Angle (Ëš)"]))
+        angle_list.append(float(entry["Angle (˚)"]))
     quant_dict[angle]["I"] = I_list
     quant_dict[angle]["Angle"] = angle_list
     I_list = []
@@ -103,8 +103,14 @@ alratio = 40/28.5
 def alpha(theta):
     return math.pi*alratio*math.sin(theta)
 
+def sinc(x):
+    if x == 0:
+        return 1
+    else:
+        return math.sin(x)/x
+
 def PolarisedInt(theta, p):
-    return (math.sin(alpha(theta))/alpha(theta))**2*(1+math.cos(p)**4+2*math.cos(p)**2*math.cos(beta(theta)))
+    return (sinc(alpha(theta)))**2*(1+math.cos(p)**4+2*math.cos(p)**2*math.cos(beta(theta)))
 vectPolInt = np.vectorize(PolarisedInt)
 
 X, Y = np.meshgrid(np.linspace(-math.pi/2, math.pi/2, 2280), np.linspace(0, math.pi/2, 2280))
@@ -112,6 +118,29 @@ Z = vectPolInt(X, Y)
 
 plt.figure(3)
 plt.pcolormesh(X, Y, Z, vmax=1.2, cmap='plasma')
+
+X = np.linspace(0,math.pi/2,1000)
+pol_angle = 0
+Y = vectPolInt(X, pol_angle*math.pi/180)*quant_dict[pol_angle]["I"][0]*0.25
+
+rad_list = []
+for angle in quant_dict[pol_angle]["Angle"]:
+    rad_list.append((180 - angle)*math.pi/180)
+
+plt.figure(4)
+plt.plot(
+    rad_list, quant_dict[pol_angle]["I"], 'ro',
+    label = "Quantatative Data"
+)
+plt.plot(
+    X, Y, 'b-',
+    label = "Theoretical Data"
+)
+
+plt.xlabel('Measurement Angle from Center (rad)')
+plt.ylabel('Relative Intensity (mA)')
+plt.title(f'{pol_angle}˚ Polarised Slit, Double Slit Light Intensity')
+plt.legend()
 
 plt.show()
 
